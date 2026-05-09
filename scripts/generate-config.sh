@@ -29,13 +29,16 @@ HEADER
 for member_file in "$MEMBERS_DIR"/*.yml; do
     [ -f "$member_file" ] || continue
 
-    realm=$(grep -A1 "^member:" "$member_file" | grep "realm:" | awk '{print $2}' | tr -d '"')
-    mgmt_ip=$(grep "mgmt_ip:" "$member_file" | awk '{print $2}' | tr -d '"')
-    wg_pubkey=$(grep "wg_pubkey:" "$member_file" | awk '{print $2}' | tr -d '"')
-    name=$(grep "name:" "$member_file" | head -1 | sed 's/.*name: *//;s/"//g')
+    realm=$(grep "  realm:" "$member_file" | awk '{print $2}' | tr -d '"')
+    mgmt_ip=$(grep "  mgmt_ip:" "$member_file" | awk '{print $2}' | tr -d '"')
+    wg_pubkey=$(grep "  wg_pubkey:" "$member_file" | awk '{print $2}' | tr -d '"')
+    name=$(grep "  name:" "$member_file" | head -1 | sed 's/.*name: *//;s/"//g')
     shortname=$(echo "$realm" | tr '.' '-')
 
-    [ -z "$realm" ] || [ -z "$mgmt_ip" ] && continue
+    if [ -z "$realm" ] || [ -z "$mgmt_ip" ]; then
+        echo "Skipping $member_file: missing realm or mgmt_ip"
+        continue
+    fi
 
     cat >> "$PROXY_CONF" << EOF
 
