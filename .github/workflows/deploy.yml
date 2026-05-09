@@ -1,0 +1,32 @@
+name: Deploy Federation Config
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate config from member files
+        run: bash scripts/generate-config.sh /tmp/federation-output
+
+      - name: Deploy to Federation Relay
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.FEDERATION_SSH_KEY }}
+          FEDERATION_SECRET: ${{ secrets.FEDERATION_RADIUS_SECRET }}
+          RELAY_HOST: federation.yunzheng.space
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H $RELAY_HOST >> ~/.ssh/known_hosts 2>/dev/null
+
+          # Upload generated configs
+          scp -o StrictHostKeyChecking=no /tmp/federation-output/* root@$RELAY_HOST:/tmp/federation-output/
+
+          # Upload and run deploy script
+          scp scripts/deploy.sh root@$RELAY_HOST:/tmp/deploy-federation.sh
+          ssh root@$RELAY_HOST "FEDERATION_SECRET='$FEDERATION_SECRET' bash /tmp/deploy-federation.sh"

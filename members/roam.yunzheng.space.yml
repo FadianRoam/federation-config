@@ -1,0 +1,21 @@
+member:
+  name: "YunZheng Lab"
+  realm: "roam.yunzheng.space"
+  contact: "edward.sun@as204921.net"
+  joined: "2026-05-10"
+
+network:
+  type: "bgp"
+  mgmt_ip: "172.172.10.10"
+  wg_pubkey: "5w4M9TRSa3eLTDXiKfXoN7I7ywePPkkJ/YNExXoFwks="
+  asn: 204921
+
+radius:
+  endpoint: "roam.yunzheng.space"
+  port: 1812
+  eap_methods:
+    - "EAP-TTLS/PAP"
+
+location:
+  city: "Hong Kong"
+  country: "HK"
