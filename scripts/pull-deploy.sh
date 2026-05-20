@@ -66,26 +66,27 @@ echo "Generating configs..."
 rm -rf "${BUILD_DIR}/out"
 python3 "${SCRIPTS_DIR}/generate-configs.py" "${DEC_DIR}" "${BUILD_DIR}/out"
 
-# 4. FreeRADIUS syntax validation — roll back on failure
+# 4. Stage configs + FreeRADIUS syntax validation — roll back on failure
+echo "Staging configs to ${TARGET_DIR}..."
+cp "${BUILD_DIR}/out/clients.conf" "${TARGET_DIR}/clients.conf.new"
+cp "${BUILD_DIR}/out/proxy.conf"   "${TARGET_DIR}/proxy.conf.new"
+
 echo "Validating FreeRADIUS syntax..."
-if ! freeradius -Cx -lstdout -d "${TARGET_DIR}" \
-        -n freeradius \
-        -c "${BUILD_DIR}/out/proxy.conf" 2>&1 | grep -q "Configuration appears to be OK"; then
-    # Fall back to radiusd if freeradius binary not available
-    if command -v radiusd &>/dev/null; then
-        if ! radiusd -Cx -d "${BUILD_DIR}/out" 2>&1; then
-            echo "❌ Syntax check FAILED. Rolling back to ${LOCAL:0:7}..."
-            git reset --hard "${LOCAL}"
-            exit 1
-        fi
+if [ "$MOCK" = "true" ]; then
+    echo "Mock: freeradius syntax check (skipped)"
+else
+    if ! sudo freeradius -Cx -d "${TARGET_DIR}" 2>&1; then
+        echo "❌ Syntax check FAILED. Rolling back to ${LOCAL:0:7}..."
+        rm -f "${TARGET_DIR}/clients.conf.new" "${TARGET_DIR}/proxy.conf.new"
+        git reset --hard "${LOCAL}"
+        exit 1
     fi
 fi
 echo "✓ Syntax check passed."
 
-# 5. Apply configs to FreeRADIUS config dir
-echo "Applying to ${TARGET_DIR}..."
-cp "${BUILD_DIR}/out/clients.conf" "${TARGET_DIR}/clients.conf"
-cp "${BUILD_DIR}/out/proxy.conf"   "${TARGET_DIR}/proxy.conf"
+# 5. Apply configs
+mv "${TARGET_DIR}/clients.conf.new" "${TARGET_DIR}/clients.conf"
+mv "${TARGET_DIR}/proxy.conf.new"   "${TARGET_DIR}/proxy.conf"
 
 # 6. Reload FreeRADIUS
 if [ "$MOCK" = "true" ]; then

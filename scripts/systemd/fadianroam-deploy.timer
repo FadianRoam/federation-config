@@ -4,8 +4,8 @@ Requires=fadianroam-deploy.service
 
 [Timer]
 OnBootSec=2min
-OnUnitActiveSec=1min
-AccuracySec=10s
+OnUnitActiveSec=5min
+AccuracySec=30s
 
 [Install]
 WantedBy=timers.target

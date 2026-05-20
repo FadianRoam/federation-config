@@ -2,12 +2,13 @@
 """
 validate-schema.py — CI-safe schema validator for FadianRoam member files.
 
-Two modes:
-  --check-encrypted <dir>   Verify all *.yml files are SOPS-encrypted.
-                            Safe to run in CI — no decryption key needed.
-  --check-schema <dir>      Validate required fields and realm/filename
-                            alignment. Requires pre-decrypted files.
-                            Use locally or in a trusted environment.
+Modes:
+  --check-encrypted <dir>       Verify all *.yml files are SOPS-encrypted.
+                                Safe to run in CI — no decryption key needed.
+  --check-schema <dir>          Validate required fields and realm/filename
+                                alignment. Requires pre-decrypted files.
+  --check-sops-coverage <dir>   Verify every member file matches a creation
+                                rule in .sops.yaml. Safe to run in CI.
 """
 
 import glob
@@ -100,6 +101,32 @@ def check_schema(directory: str) -> bool:
     return ok
 
 
+def check_sops_coverage(directory: str) -> bool:
+    sops_path = os.path.join(os.path.dirname(directory.rstrip("/")), ".sops.yaml")
+    if not os.path.exists(sops_path):
+        sops_path = ".sops.yaml"
+    if not os.path.exists(sops_path):
+        print(f"❌ .sops.yaml not found")
+        return False
+    with open(sops_path) as f:
+        sops_content = f.read()
+    paths = sorted(glob.glob(os.path.join(directory, "*.yml")))
+    if not paths:
+        print(f"⚠️  No *.yml files found in {directory}")
+        return True
+    ok = True
+    for path in paths:
+        basename = os.path.basename(path)
+        realm = re.sub(r'\.sops\.yml$|\.yml$', '', basename)
+        escaped = re.escape(realm)
+        if not re.search(escaped, sops_content):
+            print(f"❌ {path} — no .sops.yaml creation rule for '{realm}'")
+            ok = False
+        else:
+            print(f"✓  {path}")
+    return ok
+
+
 def main():
     if len(sys.argv) < 3:
         print(__doc__)
@@ -109,6 +136,8 @@ def main():
         sys.exit(0 if check_encrypted(directory) else 1)
     elif mode == "--check-schema":
         sys.exit(0 if check_schema(directory) else 1)
+    elif mode == "--check-sops-coverage":
+        sys.exit(0 if check_sops_coverage(directory) else 1)
     else:
         print(f"Unknown mode: {mode}", file=sys.stderr)
         sys.exit(1)

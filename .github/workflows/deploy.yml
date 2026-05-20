@@ -49,18 +49,7 @@ jobs:
           echo "✓ No plaintext secrets detected."
 
       - name: Verify .sops.yaml covers all member files
-        run: |
-          fail=0
-          for f in members/*.yml; do
-            realm=$(basename "$f" .yml | sed 's/\.sops$//')
-            escaped=$(echo "$realm" | sed 's/\./\\\\./g')
-            if ! grep -q "$escaped" .sops.yaml; then
-              echo "❌ No .sops.yaml creation rule found for: $realm"
-              fail=1
-            fi
-          done
-          [ $fail -eq 0 ] && echo "✓ All member files have .sops.yaml coverage."
-          exit $fail
+        run: python3 scripts/validate-schema.py --check-sops-coverage members/
 
       - name: Lint generate-configs.py (Python syntax)
         run: python3 -m py_compile scripts/generate-configs.py && echo "✓ generate-configs.py OK"
