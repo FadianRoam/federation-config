@@ -1,0 +1,15 @@
+# .github/CODEOWNERS
+# GitHub will automatically request review from the listed owners when a PR
+# modifies their files. Combined with branch protection rules, this ensures
+# that a member can only modify their own YAML file.
+
+# Repo admin owns all core infrastructure
+*                                           @uetcis @yunzheng2006
+scripts/                                    @uetcis @yunzheng2006
+federations/                                @uetcis @yunzheng2006
+.sops.yaml                                  @uetcis @yunzheng2006
+.github/                                    @uetcis @yunzheng2006
+
+
+# Per-member ownership — each site can only edit their own file
+/members/roam.yunzheng.space.yml            @yunzheng2006

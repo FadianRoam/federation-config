@@ -1,0 +1,13 @@
+[Unit]
+Description=FadianRoam Federation GitOps Deploy
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=deploy
+Group=deploy
+ExecStart=/opt/fadianroam/pull-deploy.sh
+StandardOutput=journal
+StandardError=journal
+ExecStopPost=/bin/rm -rf /opt/fadianroam/build/members-dec
