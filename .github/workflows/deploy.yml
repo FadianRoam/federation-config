@@ -1,84 +1,69 @@
-name: Deploy Federation Config
+name: Validate Federation Config
+
+# Runs on every PR and push to main that touches member/federation files.
+# IMPORTANT: This workflow intentionally does NOT decrypt secrets and does NOT
+# deploy to any host. Deployment is handled by pull-deploy.sh running on each
+# proxy node via a systemd timer. Secrets never leave the proxy.
 
 on:
+  pull_request:
+    paths:
+      - 'members/**'
+      - 'federations/**'
+      - 'scripts/**'
+      - '.sops.yaml'
   push:
     branches: [main]
     paths:
       - 'members/**'
       - 'federations/**'
       - 'scripts/**'
-
   workflow_dispatch:
 
 jobs:
-  build:
+  validate:
+    name: Schema & Encryption Check
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install SOPS + AGE
-        run: |
-          curl -sLO https://github.com/getsops/sops/releases/download/v3.9.4/sops-v3.9.4.linux.amd64
-          sudo mv sops-v3.9.4.linux.amd64 /usr/local/bin/sops && sudo chmod +x /usr/local/bin/sops
-          sudo apt-get install -y -qq age
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
 
-      - name: Decrypt member secrets
-        env:
-          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+      - name: Install dependencies
+        run: pip install -q pyyaml
+
+      - name: Check all member files are SOPS-encrypted
         run: |
-          mkdir -p members-dec
+          python3 scripts/validate-schema.py --check-encrypted members/
+
+      - name: Check no plaintext shared_secret committed
+        # encrypted_regex ensures only shared_secret is encrypted, but
+        # double-check no raw hex/random string slipped through unencrypted.
+        run: |
+          if grep -rn '^  shared_secret:' members/ | grep -v 'ENC\['; then
+            echo "❌ Plaintext shared_secret found — run: sops -e -i members/<file>.yml"
+            exit 1
+          fi
+          echo "✓ No plaintext secrets detected."
+
+      - name: Verify .sops.yaml covers all member files
+        run: |
+          fail=0
           for f in members/*.yml; do
-            sops decrypt "$f" > "members-dec/$(basename "$f")"
+            realm=$(basename "$f" .yml | sed 's/\.sops$//')
+            escaped=$(echo "$realm" | sed 's/\./\\\\./g')
+            if ! grep -q "$escaped" .sops.yaml; then
+              echo "❌ No .sops.yaml creation rule found for: $realm"
+              fail=1
+            fi
           done
+          [ $fail -eq 0 ] && echo "✓ All member files have .sops.yaml coverage."
+          exit $fail
 
-      - name: Generate configs
-        run: |
-          pip install -q pyyaml
-          python3 scripts/generate-configs.py members-dec out
+      - name: Lint generate-configs.py (Python syntax)
+        run: python3 -m py_compile scripts/generate-configs.py && echo "✓ generate-configs.py OK"
 
-      - name: Upload configs
-        uses: actions/upload-artifact@v4
-        with:
-          name: federation-configs
-          path: out/
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - name: apac
-            host: 142.249.114.27
-            port: 22
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download configs
-        uses: actions/download-artifact@v4
-        with:
-          name: federation-configs
-          path: out
-
-      - name: Deploy to ${{ matrix.name }}
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ matrix.host }}
-          port: ${{ matrix.port }}
-          username: deploy
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "out/*,scripts/deploy.sh"
-          target: "/tmp/federation-deploy"
-          strip_components: 0
-
-      - name: Apply configs
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ matrix.host }}
-          port: ${{ matrix.port }}
-          username: deploy
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /tmp/federation-deploy
-            bash scripts/deploy.sh out
-            rm -rf /tmp/federation-deploy
+      - name: Lint validate-schema.py (Python syntax)
+        run: python3 -m py_compile scripts/validate-schema.py && echo "✓ validate-schema.py OK"

@@ -1,0 +1,13 @@
+[Unit]
+Description=FadianRoam Federation GitOps Deploy
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/opt/fadianroam/pull-deploy.sh
+StandardOutput=journal
+StandardError=journal
+# Keep decrypted secrets off disk even if the script crashes
+ExecStopPost=/bin/rm -rf /opt/fadianroam/build/members-dec
