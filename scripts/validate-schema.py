@@ -109,18 +109,21 @@ def check_sops_coverage(directory: str) -> bool:
         print(f"❌ .sops.yaml not found")
         return False
     with open(sops_path) as f:
-        sops_content = f.read()
+        sops_cfg = yaml.safe_load(f)
+    rules = sops_cfg.get("creation_rules", [])
+    patterns = [r.get("path_regex", "") for r in rules if r.get("path_regex")]
+    if not patterns:
+        print(f"❌ .sops.yaml has no creation_rules with path_regex")
+        return False
     paths = sorted(glob.glob(os.path.join(directory, "*.yml")))
     if not paths:
         print(f"⚠️  No *.yml files found in {directory}")
         return True
     ok = True
     for path in paths:
-        basename = os.path.basename(path)
-        realm = re.sub(r'\.sops\.yml$|\.yml$', '', basename)
-        escaped = re.escape(realm)
-        if not re.search(escaped, sops_content):
-            print(f"❌ {path} — no .sops.yaml creation rule for '{realm}'")
+        matched = any(re.search(p, path) for p in patterns)
+        if not matched:
+            print(f"❌ {path} — no .sops.yaml creation rule matches this path")
             ok = False
         else:
             print(f"✓  {path}")
