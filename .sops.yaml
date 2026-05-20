@@ -1,0 +1,5 @@
+creation_rules:
+  - path_regex: members/.*\.yml$
+    encrypted_regex: "^shared_secret$"
+    age: >-
+      age16vjnz9tpywkhkdnlkr60g448ss2m3lcw9xxlqd2edc9edcxmfessw3l2y9

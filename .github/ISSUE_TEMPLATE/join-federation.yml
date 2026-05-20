@@ -1,0 +1,87 @@
+name: Deploy New Federation Proxy
+description: Apply to host a new FadianRoam Federation Relay proxy
+title: "[Federation] <region> - <country>"
+labels: ["federation-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## New Federation Proxy Application
+
+        Before submitting, please ensure:
+        1. FreeRADIUS 3.0+, WireGuard, SOPS, and AGE are installed on your server
+        2. A `deploy` user exists with sudo permissions for `cp`, `systemctl`, `wg`, `freeradius`
+        3. The CI/CD SSH public key is added to `/home/deploy/.ssh/authorized_keys`:
+        ```
+        ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBt/emqI0l/a2bfWwDiEoHiAZJaHeAoKnLjf/Z5gm7Ew fadianroam-federation-deploy
+        ```
+        4. AGE key generated: `mkdir -p /etc/sops && age-keygen -o /etc/sops/age-key.txt`
+
+  - type: input
+    id: name
+    attributes:
+      label: Proxy Name
+      description: "Short name for this federation relay (e.g. APAC, NA, EU)"
+      placeholder: "NA"
+    validations:
+      required: true
+
+  - type: input
+    id: country
+    attributes:
+      label: Deploy Country
+      description: "Country code where the server is located"
+      placeholder: "US"
+    validations:
+      required: true
+
+  - type: input
+    id: ssh_host
+    attributes:
+      label: SSH Host
+      description: "Server IP or hostname for SSH deployment"
+      placeholder: "203.0.113.1"
+    validations:
+      required: true
+
+  - type: input
+    id: ssh_port
+    attributes:
+      label: SSH Port
+      description: "SSH port (default 22)"
+      placeholder: "22"
+    validations:
+      required: true
+
+  - type: input
+    id: age_pubkey
+    attributes:
+      label: AGE Public Key
+      description: "From age-keygen output (age1...)"
+      placeholder: "age1..."
+    validations:
+      required: true
+
+  - type: input
+    id: wg_port
+    attributes:
+      label: WireGuard Listen Port
+      description: "Port for the MGMT VPN WireGuard interface"
+      placeholder: "51820"
+    validations:
+      required: true
+
+  - type: input
+    id: contact
+    attributes:
+      label: Operator Contact
+      description: "Telegram handle or email"
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes
+      description: "Bandwidth, uplink provider, any other relevant info"

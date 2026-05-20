@@ -1,21 +1,33 @@
 member:
-  name: "YunZheng Lab"
-  realm: "roam.yunzheng.space"
-  contact: "edward.sun@as204921.net"
-  joined: "2026-05-10"
-
+    name: YunZheng Lab
+    realm: roam.yunzheng.space
+    contact: edward.sun@as204921.net
+    joined: "2026-05-10"
 network:
-  type: "bgp"
-  mgmt_ip: "172.172.10.10"
-  wg_pubkey: "5w4M9TRSa3eLTDXiKfXoN7I7ywePPkkJ/YNExXoFwks="
-  asn: 204921
-
+    type: bgp
+    mgmt_ip: 172.172.10.10
+    wg_pubkey: 5w4M9TRSa3eLTDXiKfXoN7I7ywePPkkJ/YNExXoFwks=
+    asn: 204921
 radius:
-  endpoint: "roam.yunzheng.space"
-  port: 1812
-  eap_methods:
-    - "EAP-TTLS/PAP"
-
+    port: 1812
+    shared_secret: ENC[AES256_GCM,data:XMTOqpjfti5UYg7I/SpzqVNjYUjBZYDb8luEXe/f2uEZ+BRRAMj+J9tRdRRyl46y,iv:O/yNi+8nSSuy8vs5XGotOQjVhWZZryXmRd1QvtOdmZo=,tag:OQWj9U14JNBtvjKs+6ekWQ==,type:str]
+    eap_methods:
+        - EAP-TTLS/PAP
 location:
-  city: "Hong Kong"
-  country: "HK"
+    city: Hong Kong
+    country: HK
+sops:
+    age:
+        - enc: |
+            -----BEGIN AGE ENCRYPTED FILE-----
+            YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSAxNjlDWXgwR004dFF3ZUti
+            VE4wRnRuWlV2UE9VWVRLdDk2MW1QOG5LY3d3Cmc1VHNTK2ZUSk9XTTNGZnFMU0hE
+            bTJWUnJ1Qkl3UWI5UFhQZFlEOS96OFUKLS0tIG4zYmROejlXUVpCa2dkTE52ZGxU
+            cFcvWWxBaTlUWVIrWGdrMU5TQW4xM2MK/Jtc+VdgoyQL9qAMo87/9MXqe7QkTEpA
+            NGK33r2PYVCyrKzte9aZEHUZ7BVaFPo+qewW0vyN0393UhBeyzJJdQ==
+            -----END AGE ENCRYPTED FILE-----
+          recipient: age16vjnz9tpywkhkdnlkr60g448ss2m3lcw9xxlqd2edc9edcxmfessw3l2y9
+    encrypted_regex: ^shared_secret$
+    lastmodified: "2026-05-20T07:09:42Z"
+    mac: ENC[AES256_GCM,data:nfgKrXkuhcdQi0FX/q6KdQz6ZraTFTWJvfgnLQJsT1tCbE9VIoPDYEC1EFajtDQF2EQd8m8pes4qVJHsDg3yv5+v3ytGdPb5psu8QbaqcdvW4N68NXi6Th3sQYW/DonnyJGVvjtpp9OxYXEW9jgHodrcWeIl0/9hF6PMU/9BSWU=,iv:KZvrBjLlUvMceezEvqHAnQ8eh1+fXZr+R3OfV74trh4=,tag:lXkJzRAd0Lt6sdoiUrG/Rw==,type:str]
+    version: 3.13.1

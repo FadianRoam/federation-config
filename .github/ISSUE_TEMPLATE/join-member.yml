@@ -1,0 +1,85 @@
+name: Join as FadianRoam Site
+description: Apply to join the FadianRoam Federation as a new Site (member)
+title: "[Member] <your-realm>"
+labels: ["member-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## FadianRoam Site Join Request
+        After approval, an admin will generate your shared secret, encrypt it, and add your member config.
+        CI/CD will auto-deploy to all federation proxies.
+
+  - type: input
+    id: realm
+    attributes:
+      label: Realm
+      description: "Your FadianRoam realm (e.g. example.fadianroam.net)"
+      placeholder: "example.fadianroam.net"
+    validations:
+      required: true
+
+  - type: input
+    id: site_name
+    attributes:
+      label: Site Name
+      description: "Human-readable name for your Site"
+      placeholder: "Example Network Lab"
+    validations:
+      required: true
+
+  - type: input
+    id: wg_pubkey
+    attributes:
+      label: WireGuard Public Key
+      description: "Your MGMT VPN WireGuard public key"
+      placeholder: "abc123...="
+    validations:
+      required: true
+
+  - type: input
+    id: asn
+    attributes:
+      label: ASN (if applicable)
+      description: "Your Autonomous System Number"
+      placeholder: "AS12345"
+
+  - type: dropdown
+    id: network_type
+    attributes:
+      label: Network Type
+      options:
+        - bgp
+        - sponsored (non-BGP)
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: Location
+      description: "City, Country"
+      placeholder: "Tokyo, JP"
+    validations:
+      required: true
+
+  - type: input
+    id: contact
+    attributes:
+      label: Contact
+      description: "Telegram handle or email"
+      placeholder: "@username"
+    validations:
+      required: true
+
+  - type: textarea
+    id: eap_methods
+    attributes:
+      label: EAP Methods
+      description: "Supported EAP methods on your RADIUS"
+      value: "EAP-TTLS/PAP"
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes

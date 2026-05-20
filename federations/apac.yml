@@ -1,0 +1,10 @@
+name: "APAC Federation Relay"
+country: "HK"
+hostname: "federation.yunzheng.space"
+ssh_host: "142.249.114.27"
+ssh_port: 22
+ssh_user: "deploy"
+age_pubkey: "age16vjnz9tpywkhkdnlkr60g448ss2m3lcw9xxlqd2edc9edcxmfessw3l2y9"
+mgmt_ip: "172.172.10.1"
+wg_port: 51820
+status: "active"
